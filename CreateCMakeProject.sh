@@ -16,6 +16,9 @@ function usage () {
     printf "Usage: CreateCMakeProject [ProjectName] [Options]\n";
 }
 
+PROJECT_NAME="";
+USE_GIT=false;
+
 #
 # Parameter Parsing
 #
@@ -26,8 +29,7 @@ if [[ $# -ge 1 ]]; then
     # iterate over other parameters
     while [ "$1" != "" ]; do
         case $1 in
-            -g | --git )            usage
-                                    exit
+            -g | --git )            USE_GIT=true;
                                     ;;
             -h | --help )           usage
                                     exit
@@ -51,7 +53,6 @@ fi
 
 # check if name already exists
 if [[ ! -e $PROJECT_NAME ]]; then
-
     printf "Directory does not exist yet, creating...\n"
     mkdir $PROJECT_NAME;
     cd $PROJECT_NAME;
