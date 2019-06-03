@@ -1,12 +1,12 @@
 #!/bin/bash
-#
+
 #   AUTHOR:
 #   umiko (https://github.com/umiko)
 #   Permission to copy and modify is granted under the MIT license
 #   
 #   DESCRIPTION:
 #   A small script to create the ideal CMake Project structure according to https://cliutils.gitlab.io/modern-cmake/
-#
+
 
 #
 # Forward Declarations
