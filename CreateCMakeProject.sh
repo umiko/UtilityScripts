@@ -18,8 +18,11 @@ function usage () {
 
 PROJECT_NAME="";
 CREATE_CMAKE_BOILERPLATE=false;
-CREATE_DOCUMENTATION=false;
+CREATE_DOCUMENTATION_DIRECTORY=false;
+CREATE_EXTERN_DIRECTORY=false;
 CREATE_GIT_REPOSITORY=false;
+CREATE_SCRIPTS_DIRECTORY=false;
+CREATE_TESTS_DIRECTORY=false;
 CMAKE_VERSION=$(cmake --version | awk '{print $3}' | grep -m1 "");
 
 #
@@ -33,18 +36,40 @@ if [[ $# -ge 1 ]]; then
     # iterate over parameters and set flags for project creation
     while [ "$1" != "" ]; do
         case $1 in
+            -a | --all )            CREATE_CMAKE_BOILERPLATE=true;
+                                    CREATE_DOCUMENTATION_DIRECTORY=true;
+                                    CREATE_EXTERN_DIRECTORY=true;
+                                    CREATE_GIT_REPOSITORY=true;
+                                    CREATE_SCRIPTS_DIRECTORY=true;
+                                    CREATE_TESTS_DIRECTORY=true;
+                                    ;;
+
             -c | --cmake )          CREATE_CMAKE_BOILERPLATE=true;
                                     ;;
-            -cv | --cmake-version   shift;
+
+            -cv | --cmake-version ) shift;
                                     CMAKE_VERSION=$1;
                                     ;;
-            -d | --docs )           CREATE_DOCUMENTATION=true;
+
+            -d | --docs )           CREATE_DOCUMENTATION_DIRECTORY=true;
                                     ;;
+
+            -e | --extern )         CREATE_EXTERN_DIRECTORY=true;
+                                    ;;
+
             -g | --git )            CREATE_GIT_REPOSITORY=true;
                                     ;;
+
             -h | --help )           usage;
                                     exit;
                                     ;;
+
+            -s | --scripts )        CREATE_SCRIPTS_DIRECTORY=true;
+                                    ;;
+
+            -t | --tests )          CREATE_TESTS_DIRECTORY=true;
+                                    ;;
+
             * )                     usage;
                                     exit;
                                     ;;
@@ -70,15 +95,27 @@ if [[ ! -e $PROJECT_NAME ]]; then
     mkdir $PROJECT_NAME/include/$PROJECT_NAME;
     mkdir $PROJECT_NAME/src;
     mkdir $PROJECT_NAME/apps;
-    mkdir $PROJECT_NAME/tests;
-    mkdir $PROJECT_NAME/docs;
-    mkdir $PROJECT_NAME/extern;
-    mkdir $PROJECT_NAME/scripts;
 
     printf "Directory structure created, touching files...\n"
     touch $PROJECT_NAME/CMakeLists.txt;
     touch $PROJECT_NAME/src/CMakeLists.txt;
     touch $PROJECT_NAME/apps/CMakeLists.txt;
+
+    if [ "$CREATE_DOCUMENTATION_DIRECTORY" = true ] ; then
+        mkdir $PROJECT_NAME/docs;
+    fi
+
+    if [ "$CREATE_TESTS_DIRECTORY" = true ] ; then
+        mkdir $PROJECT_NAME/tests;
+    fi
+
+    if [ "$CREATE_SCRIPTS_DIRECTORY" = true ] ; then
+        mkdir $PROJECT_NAME/scripts;
+    fi
+
+    if [ "$CREATE_EXTERN_DIRECTORY" = true ] ; then
+        mkdir $PROJECT_NAME/extern;
+    fi
 
     # write top level cmake boilerplate
     if [ "$CREATE_CMAKE_BOILERPLATE" = true ] ; then
