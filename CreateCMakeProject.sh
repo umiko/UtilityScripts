@@ -21,6 +21,7 @@ CREATE_CMAKE_BOILERPLATE=false;
 CREATE_DOCUMENTATION_DIRECTORY=false;
 CREATE_EXTERN_DIRECTORY=false;
 CREATE_GIT_REPOSITORY=false;
+CREATE_README=false;
 CREATE_SCRIPTS_DIRECTORY=false;
 CREATE_TESTS_DIRECTORY=false;
 CMAKE_VERSION=$(cmake --version | awk '{print $3}' | grep -m1 "");
@@ -62,6 +63,9 @@ if [[ $# -ge 1 ]]; then
 
             -h | --help )           usage;
                                     exit;
+                                    ;;
+
+            -r | --readme )         CREATE_README=true;
                                     ;;
 
             -s | --scripts )        CREATE_SCRIPTS_DIRECTORY=true;
@@ -115,6 +119,10 @@ if [[ ! -e $PROJECT_NAME ]]; then
 
     if [ "$CREATE_EXTERN_DIRECTORY" = true ] ; then
         mkdir $PROJECT_NAME/extern;
+    fi
+
+    if [ "$CREATE_README" = true ] ; then
+        touch $PROJECT_NAME/README.md;
     fi
 
     # write top level cmake boilerplate
