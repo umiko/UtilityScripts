@@ -12,137 +12,184 @@
 # Forward Declarations
 #
 
-function usage () {
-    printf "Usage: CreateCMakeProject [ProjectName] [Options]\n";
+function main () { 
+
+    PROJECT_NAME="";
+    CREATE_CMAKE_BOILERPLATE=false;
+    CREATE_DOCUMENTATION_DIRECTORY=false;
+    CREATE_EXTERN_DIRECTORY=false;
+    CREATE_GIT_REPOSITORY=false;
+    CREATE_README=false;
+    CREATE_SCRIPTS_DIRECTORY=false;
+    CREATE_TESTS_DIRECTORY=false;
+    CMAKE_VERSION=$(cmake --version | awk '{print $3}' | grep -m1 "");
+
+    #
+    # Parameter Parsing
+    #
+
+    # check if there are parameters
+    if [[ $# -ge 1 ]]; then
+        PROJECT_NAME=$1;
+        shift;
+        # iterate over parameters and set flags for project creation
+        while [ "$1" != "" ]; do
+            case $1 in
+                -a | --all )            CREATE_CMAKE_BOILERPLATE=true;
+                                        CREATE_DOCUMENTATION_DIRECTORY=true;
+                                        CREATE_EXTERN_DIRECTORY=true;
+                                        CREATE_GIT_REPOSITORY=true;
+                                        CREATE_SCRIPTS_DIRECTORY=true;
+                                        CREATE_TESTS_DIRECTORY=true;
+                                        ;;
+
+                -c | --cmake )          CREATE_CMAKE_BOILERPLATE=true;
+                                        ;;
+
+                -cv | --cmake-version ) shift;
+                                        CMAKE_VERSION=$1;
+                                        ;;
+
+                -d | --docs )           CREATE_DOCUMENTATION_DIRECTORY=true;
+                                        ;;
+
+                -e | --extern )         CREATE_EXTERN_DIRECTORY=true;
+                                        ;;
+
+                -g | --git )            CREATE_GIT_REPOSITORY=true;
+                                        ;;
+
+                -h | --help )           usage;
+                                        exit;
+                                        ;;
+
+                -r | --readme )         CREATE_README=true;
+                                        ;;
+
+                -s | --scripts )        CREATE_SCRIPTS_DIRECTORY=true;
+                                        ;;
+
+                -t | --tests )          CREATE_TESTS_DIRECTORY=true;
+                                        ;;
+
+                * )                     usage;
+                                        exit;
+                                        ;;
+            esac
+            shift;
+        done
+        
+    else
+        usage;
+        exit;
+    fi
+
+    #
+    # Project Creation
+    #
+
+    # check if name already exists
+    if [[ ! -e $PROJECT_NAME ]]; then
+        printf "Project does not exist yet, creating project directory structure...\n"
+        mkdir $PROJECT_NAME;
+        mkdir $PROJECT_NAME/cmake;
+        mkdir $PROJECT_NAME/include;
+        mkdir $PROJECT_NAME/include/$PROJECT_NAME;
+        mkdir $PROJECT_NAME/src;
+        mkdir $PROJECT_NAME/apps;
+
+        printf "Directory structure created, touching files...\n"
+        touch $PROJECT_NAME/CMakeLists.txt;
+        touch $PROJECT_NAME/src/CMakeLists.txt;
+        touch $PROJECT_NAME/apps/CMakeLists.txt;
+
+        if [ "$CREATE_DOCUMENTATION_DIRECTORY" = true ] ; then
+            mkdir $PROJECT_NAME/docs;
+        fi
+
+        if [ "$CREATE_TESTS_DIRECTORY" = true ] ; then
+            mkdir $PROJECT_NAME/tests;
+        fi
+
+        if [ "$CREATE_SCRIPTS_DIRECTORY" = true ] ; then
+            mkdir $PROJECT_NAME/scripts;
+        fi
+
+        if [ "$CREATE_EXTERN_DIRECTORY" = true ] ; then
+            mkdir $PROJECT_NAME/extern;
+        fi
+
+        if [ "$CREATE_README" = true ] ; then
+            touch $PROJECT_NAME/README.md;
+        fi
+
+        # write top level cmake boilerplate
+        if [ "$CREATE_CMAKE_BOILERPLATE" = true ] ; then
+            cd $PROJECT_NAME;
+            echo "cmake_minimum_required(VERSION $CMAKE_VERSION)" >> CMakeLists.txt;
+            echo "project($PROJECT_NAME VERSION 1.0)" >> CMakeLists.txt;
+            echo "set(CMAKE_MODULE_PATH \"\${PROJECT_SOURCE_DIR}/cmake\" \${CMAKE_MODULE_PATH})" >> CMakeLists.txt;
+            cd ..;
+        fi
+
+        # do the git repo last, so all things are included
+        if [ "$CREATE_GIT_REPOSITORY" = true ] ; then
+            cd $PROJECT_NAME;
+            echo "/build*" >> .gitignore;
+            git init;
+            git add .;
+            git commit -m "Created CMake project structure."
+            cd ..;
+        fi;
+    else
+        printf "A file or directory named \"$PROJECT_NAME\" already exists. Please specify an unused name."
+    fi
 }
 
-PROJECT_NAME="";
-CREATE_CMAKE_BOILERPLATE=false;
-CREATE_DOCUMENTATION_DIRECTORY=false;
-CREATE_EXTERN_DIRECTORY=false;
-CREATE_GIT_REPOSITORY=false;
-CREATE_README=false;
-CREATE_SCRIPTS_DIRECTORY=false;
-CREATE_TESTS_DIRECTORY=false;
-CMAKE_VERSION=$(cmake --version | awk '{print $3}' | grep -m1 "");
+function usage(){
+    read -r -d '' String << "_EOF_"
+Usage: CreateCMakeProject.sh <Project Name> [Optional Arguments]
 
-#
-# Parameter Parsing
-#
+This creates a template directory structure intended for the use with CMake.
 
-# check if there are parameters
-if [[ $# -ge 1 ]]; then
-    PROJECT_NAME=$1;
-    shift;
-    # iterate over parameters and set flags for project creation
-    while [ "$1" != "" ]; do
-        case $1 in
-            -a | --all )            CREATE_CMAKE_BOILERPLATE=true;
-                                    CREATE_DOCUMENTATION_DIRECTORY=true;
-                                    CREATE_EXTERN_DIRECTORY=true;
-                                    CREATE_GIT_REPOSITORY=true;
-                                    CREATE_SCRIPTS_DIRECTORY=true;
-                                    CREATE_TESTS_DIRECTORY=true;
-                                    ;;
+Optional Arguments:
 
-            -c | --cmake )          CREATE_CMAKE_BOILERPLATE=true;
-                                    ;;
+    -a | --all  :
+    Sets all the following flags to true
 
-            -cv | --cmake-version ) shift;
-                                    CMAKE_VERSION=$1;
-                                    ;;
+    -c | --cmake :
+    Creates a top level CMakeLists.txt with your current CMake version, 
+    project name and module path.
 
-            -d | --docs )           CREATE_DOCUMENTATION_DIRECTORY=true;
-                                    ;;
+    -cv | --cmake-version :
+    This Flag has to be followed by the desired CMake version number.
 
-            -e | --extern )         CREATE_EXTERN_DIRECTORY=true;
-                                    ;;
+    -d | --docs :
+    Creates a "docs" subdirectory.
 
-            -g | --git )            CREATE_GIT_REPOSITORY=true;
-                                    ;;
+    -e | --extern   :
+    Creates an "extern" subdirectory.
 
-            -h | --help )           usage;
-                                    exit;
-                                    ;;
+    -g | --git  :
+    Initializes a git repo for the project.
 
-            -r | --readme )         CREATE_README=true;
-                                    ;;
+    -h | --help :
+    Prints this text.
 
-            -s | --scripts )        CREATE_SCRIPTS_DIRECTORY=true;
-                                    ;;
+    -r | --readme   :
+    Creates a Readme file.
 
-            -t | --tests )          CREATE_TESTS_DIRECTORY=true;
-                                    ;;
+    -s | --scripts  :
+    Creates a "scripts" subdirectory.
 
-            * )                     usage;
-                                    exit;
-                                    ;;
-        esac
-        shift;
-    done
-    
-else
-    usage;
-    exit;
-fi
+    -t | --tests    :
+    Creates a "tests" subdirectory.
 
-#
-# Project Creation
-#
+For more information on why the directory structure gets
+generated the way it does, visit https://cliutils.gitlab.io/modern-cmake/
+_EOF_
 
-# check if name already exists
-if [[ ! -e $PROJECT_NAME ]]; then
-    printf "Project does not exist yet, creating project directory structure...\n"
-    mkdir $PROJECT_NAME;
-    mkdir $PROJECT_NAME/cmake;
-    mkdir $PROJECT_NAME/include;
-    mkdir $PROJECT_NAME/include/$PROJECT_NAME;
-    mkdir $PROJECT_NAME/src;
-    mkdir $PROJECT_NAME/apps;
+   printf "${String}\n";
+}
 
-    printf "Directory structure created, touching files...\n"
-    touch $PROJECT_NAME/CMakeLists.txt;
-    touch $PROJECT_NAME/src/CMakeLists.txt;
-    touch $PROJECT_NAME/apps/CMakeLists.txt;
-
-    if [ "$CREATE_DOCUMENTATION_DIRECTORY" = true ] ; then
-        mkdir $PROJECT_NAME/docs;
-    fi
-
-    if [ "$CREATE_TESTS_DIRECTORY" = true ] ; then
-        mkdir $PROJECT_NAME/tests;
-    fi
-
-    if [ "$CREATE_SCRIPTS_DIRECTORY" = true ] ; then
-        mkdir $PROJECT_NAME/scripts;
-    fi
-
-    if [ "$CREATE_EXTERN_DIRECTORY" = true ] ; then
-        mkdir $PROJECT_NAME/extern;
-    fi
-
-    if [ "$CREATE_README" = true ] ; then
-        touch $PROJECT_NAME/README.md;
-    fi
-
-    # write top level cmake boilerplate
-    if [ "$CREATE_CMAKE_BOILERPLATE" = true ] ; then
-        cd $PROJECT_NAME;
-        echo "cmake_minimum_required(VERSION $CMAKE_VERSION)" >> CMakeLists.txt;
-        echo "project($PROJECT_NAME VERSION 1.0)" >> CMakeLists.txt;
-        echo "set(CMAKE_MODULE_PATH \"\${PROJECT_SOURCE_DIR}/cmake\" \${CMAKE_MODULE_PATH})" >> CMakeLists.txt;
-        cd ..;
-    fi
-
-    # do the git repo last, so all things are included
-    if [ "$CREATE_GIT_REPOSITORY" = true ] ; then
-        cd $PROJECT_NAME;
-        echo "/build*" >> .gitignore;
-        git init;
-        git add .;
-        git commit -m "Created CMake project structure."
-        cd ..;
-    fi;
-else
-    printf "A file or directory named \"$PROJECT_NAME\" already exists. Please specify an unused name."
-fi
+main "$@"
