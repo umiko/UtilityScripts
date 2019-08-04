@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#   AUTHOR:
+#   umiko (https://github.com/umiko)
+#   Permission to copy and modify is granted under the MIT license
+#   
+#   DESCRIPTION:
+#   A Script which adds the current path to the PATH by modifying the .profile, .bash_profile and .bashrc files.
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "$DIR"
+
+if [[ -e "$HOME/.bash_profile" ]]; then
+  echo "file exists"
+  echo "export PATH=\""'$PATH'":${DIR}\"" >> ~/.bash_profile
+  source ~/.bash_profile
+fi
+
+if [[ -e "$HOME/.bashrc" ]]; then
+  echo "export PATH=\""'$PATH'":${DIR}\"" >> ~/.bashrc
+  source ~/.bashrc
+fi
+
+echo "export PATH=\""'$PATH'":${DIR}\"" >> ~/.profile
+source ~/.profile
