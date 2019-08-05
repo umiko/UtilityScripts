@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#   AUTHOR:
+#   umiko (https://github.com/umiko)
+#   Permission to copy and modify is granted under the MIT license
+#   
+#   DESCRIPTION:
+#   A small script to create boilerplate bash script code.
+
+if [[ $# -ge 1 ]]; then
+    PROJECT_NAME=$1;
+    touch $PROJECT_NAME;
+read -r -d '' BPC << "_EOS_"
+
+#!/bin/bash
+
+#   AUTHOR:
+#   umiko (https://github.com/umiko)
+#   Permission to copy and modify is granted under the MIT license
+#   
+#   DESCRIPTION:
+#   
+
+function main () {
+
+}
+
+
+
+main "$@"
+_EOS_
+
+    echo "${BPC}" >> $PROJECT_NAME;
+else
+    printf "Usage: CreateBashScript <ScriptName>\n";
+fi
+
