@@ -5,7 +5,7 @@
 #   Permission to copy and modify is granted under the MIT license
 #   
 #   DESCRIPTION:
-#   A Script which adds the current path to the PATH by modifying the .profile, .bash_profile and .bashrc files.
+#   A Script which adds the current working directory to the PATH by modifying the .profile, .bash_profile and .bashrc files.
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "$DIR"
