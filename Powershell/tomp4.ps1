@@ -1,0 +1,1 @@
+Get-ChildItem -Path .\ -Recurse -Filter *.ts | ForEach-Object { ffmpeg -i $_.FullName -map 0 -c copy "$($_.DirectoryName)\$($_.BaseName).mp4" }
